@@ -1,7 +1,20 @@
+# Environment
 .env
-venv/
+
+# Database
+db.sqlite3
+
+# User uploads
+media/
+
+# Python
 __pycache__/
 *.pyc
-db.sqlite3
+
+# Virtual environments
+venv/
+.venv/
+
+# IDE
 .vscode/
 .idea/
