@@ -1,0 +1,96 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Interview Availability – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+
+    <div class="dashboard-header">
+      <div>
+        <h1>🗓️ Interview <span class="accent">Availability</span></h1>
+        <p class="text-muted">Define date/time windows when interviews can be held. Slots are generated automatically and the AI will reference them when drafting interview invitations.</p>
+      </div>
+      <div class="dashboard-actions">
+        <a href="{% url 'interview_timetable' %}" class="btn btn-outline">📋 View Timetable</a>
+      </div>
+    </div>
+
+    <div class="profile-summary-card mt-3">
+      <h3>Add Availability Window</h3>
+      <form method="post" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; margin-top:12px;">
+        {% csrf_token %}
+
+        <div>
+          <label class="pf-label" for="job">Job (leave blank for a global window)</label>
+          <select name="job" id="job" style="width:100%; margin-top:6px;">
+            <option value="">— Global (any job) —</option>
+            {% for job in jobs %}
+            <option value="{{ job.id }}">{{ job.title }} ({{ job.department }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="pf-label" for="slot_duration_minutes">Slot Duration (minutes)</label>
+          <input type="number" name="slot_duration_minutes" id="slot_duration_minutes" value="30" min="10" step="5" style="width:100%; margin-top:6px;">
+        </div>
+
+        <div>
+          <label class="pf-label" for="date">Date</label>
+          <input type="date" name="date" id="date" required style="width:100%; margin-top:6px;">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div>
+            <label class="pf-label" for="start_time">Start Time</label>
+            <input type="time" name="start_time" id="start_time" required style="width:100%; margin-top:6px;">
+          </div>
+          <div>
+            <label class="pf-label" for="end_time">End Time</label>
+            <input type="time" name="end_time" id="end_time" required style="width:100%; margin-top:6px;">
+          </div>
+        </div>
+
+        <div style="grid-column:1/-1;">
+          <button type="submit" class="btn btn-primary">+ Add Window &amp; Generate Slots</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="dashboard-section mt-3">
+      <h2>Existing Availability Windows</h2>
+      {% if windows %}
+      <div class="applications-table-wrap">
+        <table class="applications-table">
+          <thead>
+            <tr>
+              <th>Job</th>
+              <th>Date</th>
+              <th>Time Window</th>
+              <th>Slot Length</th>
+              <th class="text-center">Slots Generated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for w in windows %}
+            <tr>
+              <td>{{ w.job.title|default:"Global (any job)" }}</td>
+              <td>{{ w.date|date:"D, M d, Y" }}</td>
+              <td>{{ w.start_time|time:"g:i A" }} – {{ w.end_time|time:"g:i A" }}</td>
+              <td>{{ w.slot_duration_minutes }} min</td>
+              <td class="text-center">{{ w.slots.count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <p>No availability windows have been created yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}

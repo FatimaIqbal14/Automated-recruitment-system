@@ -94,9 +94,35 @@ def get_next_interview_slot(job):
 
     return None
 
+def get_next_available_interview_slot(job):
+    """
+    Find next available interview slot from the custom slots.
+    First tries to find a slot specific to the job, then falls back to a global slot.
+    """
+    from django.utils import timezone
+    from .models import InterviewSlot
+    
+    # 1. Try to find a slot specific to the job
+    slot = InterviewSlot.objects.filter(
+        availability__job=job,
+        is_occupied=False,
+        start_time__gt=timezone.now()
+    ).order_by('start_time').first()
+    
+    if not slot:
+        # 2. Try to find a global slot (job is null)
+        slot = InterviewSlot.objects.filter(
+            availability__job__isnull=True,
+            is_occupied=False,
+            start_time__gt=timezone.now()
+        ).order_by('start_time').first()
+        
+    return slot
+
+
 def screen_application(application):
     print("SCREEN_APPLICATION CALLED")
-    """Use Gemini AI to screen application and send acceptance/rejection email."""
+    """Use Gemini AI to screen application and create a pending review draft."""
     job = application.job
     cv_text = extract_cv_text(application.cv) if application.cv else "No CV uploaded."
     print(f"CV TEXT SENT TO AI:\n{cv_text[:500]}")  
@@ -157,23 +183,22 @@ REASON: <one sentence explanation>
     print("AI SCORE:", score)
     application.ai_score = score
     application.ai_reason = reason
+    application.save()
 
-    candidate_email = application.user.email
     candidate_name = application.full_name or application.user.email
-
+    ai_suggested_status = 'Accepted' if score >= 70 else 'Rejected'
+    
+    email_subject = ""
+    email_body = ""
+    assigned_slot = None
+    
     if score >= 70:
-        slot = get_next_interview_slot(job)
-
-        if slot:
-            application.interview_slot = slot
-            application.status = 'Accepted'
-            application.save()
-
-            slot_str = slot.strftime("%A, %B %d, %Y at %I:%M %p")
-
-            send_mail(
-                subject=f"Interview Invitation – {job.title} | SOORTY Denimkind",
-                message=f"""Dear {candidate_name},
+        # Find next available interview slot
+        assigned_slot = get_next_available_interview_slot(job)
+        if assigned_slot:
+            slot_str = assigned_slot.start_time.strftime("%A, %B %d, %Y at %I:%M %p")
+            email_subject = f"Interview Invitation – {job.title} | SOORTY Denimkind"
+            email_body = f"""Dear {candidate_name},
 
 Congratulations! We have reviewed your application for the {job.title} position at SOORTY Denimkind and are pleased to invite you for an interview.
 
@@ -193,19 +218,11 @@ We look forward to meeting you!
 Best regards,
 HR Team
 SOORTY Denimkind
-""",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[candidate_email],
-                fail_silently=False,
-            )
-
+"""
         else:
-            application.status = 'Accepted'
-            application.save()
-
-            send_mail(
-                subject=f"Application Update – {job.title} | SOORTY Denimkind",
-                message=f"""Dear {candidate_name},
+            # Fallback if no slot is defined yet
+            email_subject = f"Application Update – {job.title} | SOORTY Denimkind"
+            email_body = f"""Dear {candidate_name},
 
 Congratulations! We have reviewed your application for the {job.title} position and are pleased to inform you that you have been shortlisted.
 
@@ -214,19 +231,10 @@ Our HR team will contact you shortly to schedule your interview.
 Best regards,
 HR Team
 SOORTY Denimkind
-""",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[candidate_email],
-                fail_silently=False,
-            )
-
+"""
     else:
-        application.status = 'Rejected'
-        application.save()
-
-        send_mail(
-            subject=f"Your Application for {job.title} – SOORTY Denimkind",
-            message=f"""Dear {candidate_name},
+        email_subject = f"Your Application for {job.title} – SOORTY Denimkind"
+        email_body = f"""Dear {candidate_name},
 
 Thank you for your interest in the {job.title} position at SOORTY Denimkind and for taking the time to submit your application.
 
@@ -239,8 +247,19 @@ We wish you all the best in your career journey.
 Warm regards,
 HR Team
 SOORTY Denimkind
-""",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[candidate_email],
-            fail_silently=False,
-        )
+"""
+
+    # Create the review draft
+    from .models import ApplicationReview
+    ApplicationReview.objects.create(
+        application=application,
+        match_percentage=score,
+        ai_suggested_status=ai_suggested_status,
+        ai_generated_email_subject=email_subject,
+        ai_generated_email_body=email_body,
+        review_status='PENDING',
+        final_status=ai_suggested_status,
+        final_email_subject=email_subject,
+        final_email_body=email_body,
+        interview_slot=assigned_slot
+    )

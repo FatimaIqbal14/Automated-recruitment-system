@@ -42,9 +42,12 @@
                   {{ job.app_count }}
                 </span>
               </td>
-              <td class="text-center">
+              <td class="text-center" style="display: flex; gap: 8px; justify-content: center;">
                 <a href="{% url 'admin_job_applicants' job.id %}" class="btn btn-outline btn-sm">
                   View Candidates →
+                </a>
+                <a href="{% url 'admin_edit_job' job.id %}" class="btn btn-ghost btn-sm">
+                  ✏️ Edit
                 </a>
               </td>
             </tr>
@@ -112,9 +115,11 @@
 </div>
 
 <!-- Link to raw Django admin -->
+{% if user.profile.is_developer or user.is_superuser %}
 <div class="dashboard-section">
-  <a href="/django-admin/" class="btn btn-ghost">⚙️ Go to Django Admin Panel →</a>
+  <a href="{% url 'admin:index' %}" class="btn btn-ghost">⚙️ Go to Django Admin Panel →</a>
 </div>
+{% endif %}
 
   </div>
 </section>

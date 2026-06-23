@@ -1,0 +1,95 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Interview Timetable – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+
+    <div class="dashboard-header">
+      <div>
+        <h1>📋 Interview <span class="accent">Timetable</span></h1>
+        <p class="text-muted">All interview slots — see what's occupied and what's still free, by date and time.</p>
+      </div>
+      <div class="dashboard-actions">
+        <a href="{% url 'manage_interview_availability' %}" class="btn btn-outline">+ Add Availability</a>
+      </div>
+    </div>
+
+    <div class="dashboard-stats" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px;">
+      <div class="profile-summary-card" style="margin:0; text-align:center;">
+        <h2 style="font-size:2rem; color:var(--clr-danger);">{{ occupied_count }}</h2>
+        <p class="text-muted">Occupied Slots</p>
+      </div>
+      <div class="profile-summary-card" style="margin:0; text-align:center;">
+        <h2 style="font-size:2rem; color:var(--clr-success);">{{ free_count }}</h2>
+        <p class="text-muted">Free Slots</p>
+      </div>
+      <div class="profile-summary-card" style="margin:0; text-align:center;">
+        <h2 style="font-size:2rem; color:var(--clr-primary-h);">{{ slots|length }}</h2>
+        <p class="text-muted">Total Slots</p>
+      </div>
+    </div>
+
+    <div class="dashboard-section">
+      <form method="get" style="margin-bottom:16px; display:flex; gap:12px; align-items:center;">
+        <label class="pf-label" for="job" style="margin:0;">Filter by job:</label>
+        <select name="job" id="job" onchange="this.form.submit()" style="max-width:280px;">
+          <option value="">All jobs</option>
+          {% for job in jobs %}
+          <option value="{{ job.id }}" {% if job.id == selected_job_id %}selected{% endif %}>{{ job.title }}</option>
+          {% endfor %}
+        </select>
+      </form>
+
+      {% if dates and grid_rows %}
+      <div class="applications-table-wrap" style="overflow-x:auto;">
+        <table class="applications-table timetable-grid">
+          <thead>
+            <tr>
+              <th class="timetable-corner">Time</th>
+              {% for d in dates %}
+              <th class="text-center">
+                {{ d|date:"D" }}<br>
+                <span style="font-weight:400; font-size:.78rem; color:var(--clr-muted);">{{ d|date:"M d, Y" }}</span>
+              </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in grid_rows %}
+            <tr>
+              <th class="timetable-time-label">{{ row.time|time:"g:i A" }}</th>
+              {% for cell in row.cells %}
+                {% if cell %}
+                  {% if cell.is_occupied %}
+                  <td class="timetable-cell occupied" title="{{ cell.application.full_name|default:cell.application.user.email|default:'Booked' }}">
+                    <span class="status-badge status-rejected">Occupied</span>
+                    {% if cell.application %}
+                    <div class="timetable-cell-name">{{ cell.application.full_name|default:cell.application.user.email }}</div>
+                    {% endif %}
+                  </td>
+                  {% else %}
+                  <td class="timetable-cell free">
+                    <span class="status-badge status-accepted">Free</span>
+                  </td>
+                  {% endif %}
+                {% else %}
+                <td class="timetable-cell empty">—</td>
+                {% endif %}
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <p>No interview slots exist yet for this filter.</p>
+        <a href="{% url 'manage_interview_availability' %}" class="btn btn-primary mt-1">Add Availability</a>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}

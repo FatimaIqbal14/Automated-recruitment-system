@@ -1,0 +1,79 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Manage Developers – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+
+    <div class="dashboard-header">
+      <div>
+        <h1>⚙️ Manage <span class="accent">Developer Roles</span></h1>
+        <p class="text-muted">Grant or revoke Developer access to raw Django Admin.</p>
+      </div>
+      <div class="dashboard-actions">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">← Back to Dashboard</a>
+      </div>
+    </div>
+
+    <div class="dashboard-section mt-3">
+      <div class="applications-table-wrap">
+        <table class="applications-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>System Status</th>
+              <th>Developer Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td><strong>{{ u.username }}</strong></td>
+              <td>{{ u.email|default:"—" }}</td>
+              <td>
+                {% if u.is_superuser %}
+                <span class="status-badge status-accepted">Superuser</span>
+                {% elif u.is_staff %}
+                <span class="status-badge status-reviewed">Staff / Admin</span>
+                {% else %}
+                <span class="status-badge status-pending">Regular User</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if u.profile.is_developer %}
+                <span class="status-badge status-accepted">Developer</span>
+                {% else %}
+                <span class="status-badge status-rejected">No Access</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="POST" style="margin: 0; display: inline-block;">
+                  {% csrf_token %}
+                  <input type="hidden" name="user_id" value="{{ u.id }}">
+                  {% if u.profile.is_developer %}
+                  <button type="submit" name="action" value="revoke" class="btn btn-outline btn-sm" style="color: var(--clr-danger); border-color: var(--clr-danger);">
+                    Revoke Developer
+                  </button>
+                  {% else %}
+                  <button type="submit" name="action" value="grant" class="btn btn-primary btn-sm">
+                    Grant Developer
+                  </button>
+                  {% endif %}
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center">No users registered yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -28,7 +28,16 @@
         <p>{{ job.description }}</p>
 
         <h3>Requirements</h3>
-        <p>{{ job.requirements }}</p>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+  {% for line in job.requirements.splitlines %}
+    {% if line.strip %}
+    <li style="display: flex; gap: 10px; margin-bottom: 8px; color: var(--clr-muted); font-size: 0.93rem;">
+      <span style="color: var(--clr-primary); font-weight: 700; flex-shrink: 0;">•</span>
+      <span>{{ line.strip }}</span>
+    </li>
+    {% endif %}
+  {% endfor %}
+</ul>
       </div>
 
       <div class="job-detail-footer">

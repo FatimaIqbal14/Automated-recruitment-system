@@ -1,11 +1,14 @@
 from django.contrib import admin
 from django.contrib.admin import AdminSite
-from .models import Profile, Skill, Job, Application
+from .models import Profile, Skill, Job, Application, InterviewAvailability, InterviewSlot, ApplicationReview
 
 
 admin.site.register(Profile)
 admin.site.register(Skill)
 admin.site.register(Job)
+admin.site.register(InterviewAvailability)
+admin.site.register(InterviewSlot)
+admin.site.register(ApplicationReview)
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):

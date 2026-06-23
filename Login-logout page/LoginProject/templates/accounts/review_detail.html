@@ -1,0 +1,147 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Review – {{ application.full_name }} – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="page-header">
+      <a href="{% url 'manage_reviews' %}" class="back-link">← Back to All Reviews</a>
+      <h1>Review Application — <span class="accent">{{ application.job.title }}</span></h1>
+      <p class="text-muted">
+        AI-drafted result for <strong>{{ application.full_name }}</strong> ({{ application.user.email }}).
+        Edit anything below, then choose to save as a draft or send the response now.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+
+      <!-- ── Left: AI summary + status ── -->
+      <div style="display:flex; flex-direction:column; gap:24px;">
+
+        <div class="profile-summary-card" style="margin-bottom:0;">
+          <h3 style="display:flex; justify-content:space-between; align-items:center;">
+            <span>AI Assessment</span>
+            <span class="status-badge status-{{ review.review_status|lower }}">{{ review.get_review_status_display }}</span>
+          </h3>
+          <div class="profile-fields" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div class="pf-item">
+              <span class="pf-label">Match Percentage</span>
+              <span class="pf-val">
+                <span class="status-badge {% if review.match_percentage >= 70 %}status-accepted{% else %}status-rejected{% endif %}" style="font-size:1rem; font-weight:700;">
+                  {{ review.match_percentage }}%
+                </span>
+              </span>
+            </div>
+            <div class="pf-item">
+              <span class="pf-label">AI Suggested Status</span>
+              <span class="pf-val"><span class="status-badge status-{{ review.ai_suggested_status|lower }}">{{ review.ai_suggested_status }}</span></span>
+            </div>
+          </div>
+          {% if application.ai_reason %}
+          <div class="pf-item" style="margin-top:12px;">
+            <span class="pf-label">AI Reasoning</span>
+            <span class="pf-val" style="font-style:italic; color:var(--clr-muted);">{{ application.ai_reason }}</span>
+          </div>
+          {% endif %}
+          {% if review.interview_slot %}
+          <div class="pf-item" style="margin-top:12px;">
+            <span class="pf-label">Attached Interview Slot</span>
+            <span class="pf-val accent" style="font-weight:700;">
+              {{ review.interview_slot.start_time|date:"l, F d, Y g:i A" }}
+            </span>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="profile-summary-card" style="margin-bottom:0;">
+          <h3>Candidate Snapshot</h3>
+          <div class="profile-fields" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div class="pf-item"><span class="pf-label">Full Name</span><span class="pf-val">{{ application.full_name }}</span></div>
+            <div class="pf-item"><span class="pf-label">Email</span><span class="pf-val">{{ application.user.email }}</span></div>
+            <div class="pf-item"><span class="pf-label">Age</span><span class="pf-val">{{ application.age }} yrs</span></div>
+            <div class="pf-item"><span class="pf-label">Experience</span><span class="pf-val">{{ application.experience_years }} yrs</span></div>
+            <div class="pf-item" style="grid-column:1/-1;">
+              <span class="pf-label">Skills (self-reported)</span>
+              <span class="pf-val">{{ application.skills_text|default:"—" }}</span>
+            </div>
+          </div>
+          {% if application.cv %}
+          <a href="{{ application.cv.url }}" target="_blank" class="btn btn-outline btn-sm mt-1">Open CV ↗</a>
+          {% endif %}
+          <a href="{% url 'admin_applicant_detail' application.id %}" class="btn btn-ghost btn-sm mt-1">Full Applicant Dashboard →</a>
+        </div>
+
+      </div>
+
+      <!-- ── Right: Editable final decision + email ── -->
+      <div>
+        <form method="post">
+          {% csrf_token %}
+          <div class="profile-summary-card" style="margin-bottom:24px;">
+            <h3>Final Decision</h3>
+
+            <div style="margin-bottom:16px;">
+              <label class="pf-label" for="final_status">Final Status</label>
+              <select name="final_status" id="final_status" style="width:100%; margin-top:6px;">
+                {% for value, label in application.STATUS_CHOICES %}
+                <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div style="margin-bottom:16px;">
+              <label class="pf-label" for="final_email_subject">Email Subject</label>
+              <input type="text" name="final_email_subject" id="final_email_subject"
+                     value="{{ review.final_email_subject|default:review.ai_generated_email_subject }}"
+                     style="width:100%; margin-top:6px;">
+            </div>
+
+            <div style="margin-bottom:16px;">
+              <label class="pf-label" for="final_email_body">Email Body</label>
+              <textarea name="final_email_body" id="final_email_body" rows="14"
+                        style="width:100%; margin-top:6px; font-family:inherit; resize:vertical;">{{ review.final_email_body|default:review.ai_generated_email_body }}</textarea>
+            </div>
+
+            {% if available_slots %}
+            <div style="margin-bottom:8px;">
+              <label class="pf-label" for="interview_slot">Attach / Change Interview Slot (optional)</label>
+              <select name="interview_slot" id="interview_slot" style="width:100%; margin-top:6px;">
+                <option value="">— No slot attached —</option>
+                {% for slot in available_slots %}
+                <option value="{{ slot.id }}" {% if review.interview_slot_id == slot.id %}selected{% endif %}>
+                  {{ slot.start_time|date:"D, M d Y — g:i A" }}
+                </option>
+                {% endfor %}
+              </select>
+              <p class="text-muted" style="font-size:.78rem; margin-top:4px;">
+                Free slots only. See the <a href="{% url 'interview_timetable' %}">full timetable</a>.
+              </p>
+            </div>
+            {% else %}
+            <p class="text-muted" style="font-size:.82rem;">
+              No free interview slots exist yet. <a href="{% url 'manage_interview_availability' %}">Add availability →</a>
+            </p>
+            {% endif %}
+          </div>
+
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button type="submit" name="action" value="save" class="btn btn-outline">
+              💾 Save Changes (not sent yet)
+            </button>
+            <button type="submit" name="action" value="send" class="btn btn-primary"
+                    onclick="return confirm('This will email the candidate now and update their status. Continue?');">
+              📨 Send Response to Candidate
+            </button>
+          </div>
+          {% if review.review_status == 'SENT' %}
+          <p class="text-muted" style="font-size:.82rem; margin-top:10px;">
+            This response was already sent on {{ review.sent_at|date:"M d, Y g:i A" }}. Saving again or re-sending will email the candidate again with whatever is currently in the form.
+          </p>
+          {% endif %}
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

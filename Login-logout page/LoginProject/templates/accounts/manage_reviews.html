@@ -1,0 +1,154 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Application Reviews – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+
+    <div class="dashboard-header">
+      <div>
+        <h1>🧠 AI <span class="accent">Application Reviews</span></h1>
+        <p class="text-muted">
+          The AI has analyzed candidates and drafted a status + email for each.
+          Nothing is sent to a candidate until you review and click <strong>Send Response</strong>.
+        </p>
+      </div>
+      <div class="dashboard-actions">
+        <span class="status-badge status-pending" style="font-size:.9rem;">
+          {{ total_pending }} Pending Review{{ total_pending|pluralize }}
+        </span>
+      </div>
+    </div>
+
+    {% if job_groups %}
+      {% for group in job_groups %}
+      <div class="dashboard-section mt-3">
+        <h2>{{ group.job.title }} <span class="text-muted" style="font-size:.85rem; font-weight:400;">— {{ group.job.department }}</span></h2>
+
+        <!-- Pending Review -->
+        <h3 style="margin-top:16px; font-size:.95rem; color:var(--clr-warn);">⏳ Pending Review ({{ group.pending|length }})</h3>
+        {% if group.pending %}
+        <div class="applications-table-wrap">
+          <table class="applications-table">
+            <thead>
+              <tr>
+                <th>Candidate</th>
+                <th>Match %</th>
+                <th>AI Suggested Status</th>
+                <th>Email Subject (Draft)</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for review in group.pending %}
+              <tr>
+                <td>
+                  <strong>{{ review.application.full_name|default:review.application.user.email }}</strong><br>
+                  <span style="font-size:.8rem; color:var(--clr-muted);">{{ review.application.user.email }}</span>
+                </td>
+                <td>
+                  <span class="status-badge {% if review.match_percentage >= 70 %}status-accepted{% else %}status-rejected{% endif %}">
+                    {{ review.match_percentage }}%
+                  </span>
+                </td>
+                <td><span class="status-badge status-{{ review.ai_suggested_status|lower }}">{{ review.ai_suggested_status }}</span></td>
+                <td style="max-width:280px;">
+                  <span style="font-size:.85rem;">{{ review.ai_generated_email_subject|truncatechars:50 }}</span>
+                </td>
+                <td class="text-center">
+                  <a href="{% url 'review_detail' review.id %}" class="btn btn-primary btn-sm">Review →</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted" style="font-size:.88rem; margin-bottom:0;">Nothing pending for this job.</p>
+        {% endif %}
+
+        <!-- Approved / Edited — not yet sent -->
+        <h3 style="margin-top:20px; font-size:.95rem; color:var(--clr-primary);">📝 Approved / Edited — Not Yet Sent ({{ group.approved|length }})</h3>
+        {% if group.approved %}
+        <div class="applications-table-wrap">
+          <table class="applications-table">
+            <thead>
+              <tr>
+                <th>Candidate</th>
+                <th>Match %</th>
+                <th>Final Status</th>
+                <th>Review State</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for review in group.approved %}
+              <tr>
+                <td>
+                  <strong>{{ review.application.full_name|default:review.application.user.email }}</strong><br>
+                  <span style="font-size:.8rem; color:var(--clr-muted);">{{ review.application.user.email }}</span>
+                </td>
+                <td>
+                  <span class="status-badge {% if review.match_percentage >= 70 %}status-accepted{% else %}status-rejected{% endif %}">
+                    {{ review.match_percentage }}%
+                  </span>
+                </td>
+                <td><span class="status-badge status-{{ review.final_status|lower }}">{{ review.final_status }}</span></td>
+                <td><span class="status-badge status-{{ review.review_status|lower }}">{{ review.get_review_status_display }}</span></td>
+                <td class="text-center">
+                  <a href="{% url 'review_detail' review.id %}" class="btn btn-outline btn-sm">Open →</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted" style="font-size:.88rem; margin-bottom:0;">Nothing waiting to be sent for this job.</p>
+        {% endif %}
+
+        <!-- Sent -->
+        <h3 style="margin-top:20px; font-size:.95rem; color:var(--clr-success);">✅ Sent ({{ group.sent|length }})</h3>
+        {% if group.sent %}
+        <div class="applications-table-wrap">
+          <table class="applications-table">
+            <thead>
+              <tr>
+                <th>Candidate</th>
+                <th>Final Status</th>
+                <th>Sent At</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for review in group.sent %}
+              <tr>
+                <td>
+                  <strong>{{ review.application.full_name|default:review.application.user.email }}</strong><br>
+                  <span style="font-size:.8rem; color:var(--clr-muted);">{{ review.application.user.email }}</span>
+                </td>
+                <td><span class="status-badge status-{{ review.final_status|lower }}">{{ review.final_status }}</span></td>
+                <td>{{ review.sent_at|date:"M d, Y g:i A" }}</td>
+                <td class="text-center">
+                  <a href="{% url 'review_detail' review.id %}" class="btn btn-ghost btn-sm">View →</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted" style="font-size:.88rem; margin-bottom:0;">No responses sent yet for this job.</p>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state">
+      <p>No applications have been screened by the AI yet.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

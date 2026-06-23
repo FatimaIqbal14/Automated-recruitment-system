@@ -21,4 +21,12 @@ urlpatterns = [
     path('admin-dashboard/jobs/<int:job_id>/', views.admin_job_applicants, name='admin_job_applicants'),
     path('admin-dashboard/applications/<int:application_id>/', views.admin_applicant_detail, name='admin_applicant_detail'),
     path('admin-dashboard/jobs/create/', views.admin_create_job, name='admin_create_job'),
-]
+
+    path('admin-dashboard/jobs/<int:job_id>/edit/', views.admin_edit_job, name='admin_edit_job'),
+    path('manage/developers/', views.manage_developers, name='manage_developers'),
+
+    path('manage/reviews/', views.manage_reviews, name='manage_reviews'),
+    path('manage/reviews/<int:review_id>/', views.review_detail, name='review_detail'),
+    path('manage/interview-availability/', views.manage_interview_availability, name='manage_interview_availability'),
+    path('manage/interview-timetable/', views.interview_timetable, name='interview_timetable'),
+    ]

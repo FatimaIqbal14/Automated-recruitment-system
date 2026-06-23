@@ -26,11 +26,14 @@
 
   {% if user.is_authenticated %}
   {% if user.is_staff or user.is_superuser %}
-  <li><a href="{% url 'admin_dashboard' %}" ...>💼 Admin Dashboard</a></li>
-  <a href="{% url 'admin:index' %}">Go to Django Admin</a>
+  <li><a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">💼 Admin Dashboard</a></li>
+  <li><a href="{% url 'manage_reviews' %}" class="{% if request.resolver_match.url_name == 'manage_reviews' or request.resolver_match.url_name == 'review_detail' %}active{% endif %}">🧠 Reviews</a></li>
+  <li><a href="{% url 'interview_timetable' %}" class="{% if request.resolver_match.url_name == 'interview_timetable' or request.resolver_match.url_name == 'manage_interview_availability' %}active{% endif %}">📋 Interviews</a></li>
   {% endif %}
+  {% if not user.is_staff and not user.is_superuser %}
         <li><a href="{% url 'dashboard' %}"
-            class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+            class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Profile</a></li>
+  {% endif %}
         <!-- Account dropdown (logged in) -->
         <li class="dropdown">
           <button class="dropdown-toggle">
@@ -39,8 +42,15 @@
           <ul class="dropdown-menu">
             {% if user.is_staff or user.is_superuser %}
             <li><a href="{% url 'admin_dashboard' %}">Admin Portal</a></li>
+            <li><a href="{% url 'dashboard' %}">Profile</a></li>
+            <li><a href="{% url 'manage_developers' %}">Manage Developers</a></li>
             {% endif %}
-            <li><a href="{% url 'dashboard' %}">My Dashboard</a></li>
+            {% if user.profile.is_developer or user.is_superuser %}
+            <li><a href="{% url 'admin:index' %}">Developer Admin</a></li>
+            {% endif %}
+            {% if not user.is_staff and not user.is_superuser %}
+            <li><a href="{% url 'dashboard' %}">My Profile</a></li>
+            {% endif %}
             <li><a href="{% url 'edit_profile' %}">Edit Profile</a></li>
             <li class="divider"></li>
             <li><a href="{% url 'logout' %}" class="logout-link">Logout</a></li>

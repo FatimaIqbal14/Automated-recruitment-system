@@ -74,21 +74,31 @@
           </div>
         </div>
 
-        <!-- Action / Status update form -->
+        <!-- AI Review status (read-only here; edit/send happens in the Review pipeline) -->
         <div class="profile-summary-card" style="margin-bottom: 0;">
-          <h3>Update Application Status</h3>
-          <form method="post" style="display: flex; gap: 12px; align-items: center; margin-top: 12px;">
-            {% csrf_token %}
-            <div style="flex: 1;">
-              <select name="status" style="width: 100%;">
-                <option value="Pending" {% if application.status == 'Pending' %}selected{% endif %}>Pending</option>
-                <option value="Reviewed" {% if application.status == 'Reviewed' %}selected{% endif %}>Reviewed</option>
-                <option value="Accepted" {% if application.status == 'Accepted' %}selected{% endif %}>Accepted</option>
-                <option value="Rejected" {% if application.status == 'Rejected' %}selected{% endif %}>Rejected</option>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Update Status</button>
-          </form>
+          <h3>Application Review</h3>
+          {% if latest_review %}
+          <div class="pf-item" style="margin-bottom:12px;">
+            <span class="pf-label">Review Status</span>
+            <span class="pf-val">
+              <span class="status-badge status-{{ latest_review.review_status|lower }}">{{ latest_review.get_review_status_display }}</span>
+            </span>
+          </div>
+          <p class="text-muted" style="font-size:.88rem;">
+            {% if latest_review.review_status == 'PENDING' %}
+              The AI has analyzed this application and drafted a status + email. Nothing has been sent to the candidate yet.
+            {% elif latest_review.review_status == 'SENT' %}
+              A response was sent to the candidate on {{ latest_review.sent_at|date:"M d, Y g:i A" }}.
+            {% else %}
+              An admin has reviewed this AI draft but hasn't sent it to the candidate yet.
+            {% endif %}
+          </p>
+          <a href="{% url 'review_detail' latest_review.id %}" class="btn btn-primary">
+            Open in Review Pipeline →
+          </a>
+          {% else %}
+          <p class="text-muted" style="font-size:.88rem;">The AI has not generated a review for this application yet.</p>
+          {% endif %}
         </div>
 
       </div>

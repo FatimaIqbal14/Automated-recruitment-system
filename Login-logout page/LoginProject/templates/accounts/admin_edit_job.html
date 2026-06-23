@@ -1,13 +1,13 @@
 {% extends 'accounts/base.html' %}
-{% block title %}Post a New Job – SOORTI Denimkind{% endblock %}
+{% block title %}Edit Job – {{ job.title }} – SOORTY Denimkind{% endblock %}
 
 {% block content %}
 <section class="section">
   <div class="container container-narrow">
     <div class="page-header">
       <a href="{% url 'admin_dashboard' %}" class="back-link">← Back to Admin Dashboard</a>
-      <h1>Post a New Job</h1>
-      <p class="text-muted">Create a new job opening for candidates to apply.</p>
+      <h1>Edit Job: <span class="accent">{{ job.title }}</span></h1>
+      <p class="text-muted">Update the details for this job posting.</p>
     </div>
 
     <div class="form-card">
@@ -16,44 +16,44 @@
 
         <div class="field-group">
           <label for="title">Job Title *</label>
-          <input type="text" id="title" name="title" required placeholder="e.g. Senior Software Engineer">
+          <input type="text" id="title" name="title" required value="{{ job.title }}">
         </div>
 
         <div class="field-group">
           <label for="department">Department *</label>
-          <input type="text" id="department" name="department" required placeholder="e.g. Engineering">
+          <input type="text" id="department" name="department" required value="{{ job.department }}">
         </div>
 
         <div class="field-row">
           <div class="field-group">
             <label for="location">Location</label>
-            <input type="text" id="location" name="location" value="Remote" placeholder="e.g. Remote, New York">
+            <input type="text" id="location" name="location" value="{{ job.location }}">
           </div>
           <div class="field-group">
             <label for="job_type">Job Type</label>
             <select id="job_type" name="job_type">
-              <option value="Full-time">Full-time</option>
-              <option value="Part-time">Part-time</option>
-              <option value="Contract">Contract</option>
-              <option value="Internship">Internship</option>
+              <option value="Full-time" {% if job.job_type == 'Full-time' %}selected{% endif %}>Full-time</option>
+              <option value="Part-time" {% if job.job_type == 'Part-time' %}selected{% endif %}>Part-time</option>
+              <option value="Contract" {% if job.job_type == 'Contract' %}selected{% endif %}>Contract</option>
+              <option value="Internship" {% if job.job_type == 'Internship' %}selected{% endif %}>Internship</option>
             </select>
           </div>
         </div>
 
         <div class="field-group">
           <label for="description">Job Description *</label>
-          <textarea id="description" name="description" required placeholder="Describe the role, responsibilities, and team…"></textarea>
+          <textarea id="description" name="description" required rows="6">{{ job.description }}</textarea>
         </div>
 
         <div class="field-group">
           <label for="requirements">Requirements *</label>
-          <textarea id="requirements" name="requirements" required placeholder="Enter each requirement on a new line…" rows="8"></textarea>
+          <textarea id="requirements" name="requirements" required rows="8">{{ job.requirements }}</textarea>
           <span class="field-hint">Enter each requirement on a separate line — they will display as bullet points.</span>
         </div>
 
         <div class="form-actions">
           <a href="{% url 'admin_dashboard' %}" class="btn btn-ghost">Cancel</a>
-          <button type="submit" class="btn btn-primary">Post Job</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
       </form>
     </div>

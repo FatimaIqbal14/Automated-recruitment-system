@@ -928,6 +928,95 @@ input[type="file"] {
   color: var(--clr-danger);
 }
 
+.status-edited_approved {
+  background: rgba(154, 132, 114, .15);
+  color: var(--clr-primary);
+}
+
+.status-approved {
+  background: rgba(76, 175, 130, .15);
+  color: var(--clr-success);
+}
+
+.status-sent {
+  background: rgba(76, 175, 130, .2);
+  color: var(--clr-success);
+}
+
+.slot-card {
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  background: var(--clr-surface2);
+  font-size: .85rem;
+}
+
+.slot-card.occupied {
+  border-color: var(--clr-danger);
+  background: rgba(224, 85, 85, .08);
+}
+
+.slot-card.free {
+  border-color: var(--clr-success);
+  background: rgba(76, 175, 130, .08);
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.timetable-grid {
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.timetable-grid th,
+.timetable-grid td {
+  border: 1px solid var(--clr-border);
+}
+
+.timetable-corner,
+.timetable-time-label {
+  background: var(--clr-surface2);
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  font-weight: 700;
+  padding: 8px 14px;
+  text-align: left;
+}
+
+.timetable-cell {
+  text-align: center;
+  padding: 8px 10px;
+  min-width: 110px;
+}
+
+.timetable-cell.empty {
+  color: var(--clr-border);
+  background: var(--clr-surface2);
+}
+
+.timetable-cell.free {
+  background: rgba(76, 175, 130, .06);
+}
+
+.timetable-cell.occupied {
+  background: rgba(224, 85, 85, .06);
+}
+
+.timetable-cell-name {
+  font-size: .72rem;
+  color: var(--clr-muted);
+  margin-top: 4px;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ════════════════════════════
    ABOUT
    ════════════════════════════ */
