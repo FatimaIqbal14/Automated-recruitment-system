@@ -1,0 +1,26 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Application Submitted – SOORTY{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container container-narrow">
+    <div class="success-card">
+      <div class="success-icon">🎉</div>
+      <h1>Application Submitted!</h1>
+      <p class="success-message">
+        Thank you for applying. We have received your application and will
+        review it shortly. You will be notified of any updates.
+      </p>
+
+      <div class="success-actions">
+        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">
+          View My Dashboard →
+        </a>
+        <a href="{% url 'job_openings' %}" class="btn btn-ghost">
+          Browse More Jobs
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

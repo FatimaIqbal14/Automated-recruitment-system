@@ -1,0 +1,104 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Dashboard – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+
+    <div class="dashboard-header">
+      <div>
+        {% if user.is_staff %}
+        <h1>Welcome, <span class="accent">Admin</span> 💼</h1>
+        {% else %}
+        <h1>Welcome back, <span class="accent">{{ user.profile.display_name|default:user.email }}</span>!</h1>
+        {% endif %}
+        <p class="text-muted">Manage your applications and profile from here.</p>
+      </div>
+      <div class="dashboard-actions">
+        <a href="{% url 'edit_profile' %}" class="btn btn-outline">✏️ Edit Profile</a>
+        {% if not user.is_staff %}
+        <a href="{% url 'job_openings' %}" class="btn btn-primary">+ Apply for New Job</a>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if profile %}
+    <div class="profile-summary-card">
+      <h3>My Profile</h3>
+      <div class="profile-fields">
+        <div class="pf-item"><span class="pf-label">Candidate ID</span><span class="pf-val accent" style="font-weight: bold;">{{ profile.custom_id|default:"—" }}</span></div>
+        <div class="pf-item"><span class="pf-label">Username</span><span class="pf-val">{{ profile.display_name|default:"—" }}</span></div>
+        <div class="pf-item"><span class="pf-label">Age</span><span class="pf-val">{{ profile.age|default:"—" }}</span></div>
+        <div class="pf-item"><span class="pf-label">Gender</span><span class="pf-val">{{ profile.get_gender_display|default:"—" }}</span></div>
+        <div class="pf-item"><span class="pf-label">Experience</span><span class="pf-val">{{ profile.experience|default:"0" }} yrs</span></div>
+        <div class="pf-item">
+          <span class="pf-label">Skills</span>
+          <span class="pf-val">
+            {% for skill in profile.skills.all %}
+            <span class="tag">{{ skill.name }}</span>
+            {% empty %}—{% endfor %}
+          </span>
+        </div>
+      </div>
+      <a href="{% url 'edit_profile' %}" class="btn btn-ghost btn-sm mt-1">Edit →</a>
+    </div>
+    {% endif %}
+
+    {% if not user.is_staff %}
+    <div class="dashboard-section">
+      <h2>My Applications</h2>
+      {% if applications %}
+      <div class="applications-table-wrap">
+        <table class="applications-table">
+          <thead>
+            <tr>
+              <th>Job Title</th>
+              <th>Department</th>
+              <th>Applied On</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for app in applications %}
+            <tr>
+              <td><strong>{{ app.job.title }}</strong></td>
+              <td>{{ app.job.department }}</td>
+              <td>{{ app.applied_at|date:"M d, Y" }}</td>
+              <td>
+                <span class="status-badge status-{{ app.status|lower }}">{{ app.status }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <p>You haven't applied for any jobs yet.</p>
+        <a href="{% url 'job_openings' %}" class="btn btn-primary mt-1">Browse Openings</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="dashboard-section">
+      <h2>Open Positions</h2>
+      <div class="job-grid">
+        {% for job in jobs|slice:":3" %}
+        <div class="job-card job-card-compact">
+          <h4>{{ job.title }}</h4>
+          <span class="badge badge-dept">{{ job.department }}</span>
+          <div class="job-card-footer">
+            <a href="{% url 'apply_job' job.id %}" class="btn btn-primary btn-sm">Apply →</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% if jobs.count > 3 %}
+      <a href="{% url 'job_openings' %}" class="btn btn-ghost mt-1">See All Jobs →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "admin/base.html" %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">SOORTY Denimkind Admin</a>
+</h1>
+{% endblock %}
+
+{% block userlinks %}
+<a href="/admin-dashboard/">Administration Panel</a> /
+{{ block.super }}
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'accounts/base.html' %}
+{% block title %}SOORTY Denimkind – Find Your Dream Job{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    {% if user.is_staff %}
+    <h1>Welcome to <span class="accent">SOORTY Denimkind</span></h1>
+    <p class="hero-sub">Manage job postings and review applicants from your admin dashboard.</p>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-primary btn-lg">Go to Admin Dashboard</a>
+    {% else %}
+    <h1>Find Your <span class="accent">Dream Job</span></h1>
+    <p class="hero-sub">Discover opportunities that match your skills and passion.</p>
+    <a href="{% url 'job_openings' %}" class="btn btn-primary btn-lg">Browse All Jobs</a>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Featured Openings -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Featured Openings</h2>
+
+    {% if jobs %}
+    <div class="job-grid">
+      {% for job in jobs %}
+      <div class="job-card">
+        <div class="job-card-header">
+          <h3 class="job-title">{{ job.title }}</h3>
+          <span class="badge badge-dept">{{ job.department }}</span>
+        </div>
+        <p class="job-meta">
+          <span>📍 {{ job.location }}</span>
+          <span>🕐 {{ job.job_type }}</span>
+        </p>
+        <p class="job-desc">{{ job.description|truncatewords:20 }}</p>
+        <div class="job-card-footer">
+          <a href="{% url 'job_detail' job.id %}" class="btn btn-outline btn-sm">View Details</a>
+          {% if not user.is_staff %}
+          <a href="{% url 'apply_job' job.id %}" class="btn btn-primary btn-sm">Apply Now</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if not user.is_staff %}
+    <div class="text-center mt-3">
+      <a href="{% url 'job_openings' %}" class="btn btn-ghost">See All Openings →</a>
+    </div>
+    {% endif %}
+    {% else %}
+    <p class="empty-state">No job openings right now. Check back soon!</p>
+    {% endif %}
+
+  </div>
+</section>
+
+<!-- Why us -->
+<section class="section section-alt">
+  <div class="container">
+    <h2 class="section-title">Why SOORTY Denimkind?</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🚀</span>
+        <h4>Fast Process</h4>
+        <p>Apply in minutes and get a response within days.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎯</span>
+        <h4>Matched Roles</h4>
+        <p>We match your skills to the right opportunities.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h4>Track Applications</h4>
+        <p>Your personal dashboard keeps every application in view.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

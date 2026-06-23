@@ -1,0 +1,37 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Job Openings – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="page-header">
+      <h1>Job Openings</h1>
+      <p>Find the role that fits you best.</p>
+    </div>
+
+    {% if jobs %}
+    <div class="job-grid">
+      {% for job in jobs %}
+      <div class="job-card">
+        <div class="job-card-header">
+          <h3 class="job-title">{{ job.title }}</h3>
+          <span class="badge badge-dept">{{ job.department }}</span>
+        </div>
+        <p class="job-meta">
+          <span>📍 {{ job.location }}</span>
+          <span>🕐 {{ job.job_type }}</span>
+        </p>
+        <p class="job-desc">{{ job.description|truncatewords:25 }}</p>
+        <div class="job-card-footer">
+          <a href="{% url 'job_detail' job.id %}" class="btn btn-outline btn-sm">Details</a>
+          <a href="{% url 'apply_job' job.id %}" class="btn btn-primary btn-sm">Apply Now →</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">No openings at the moment — please check back soon!</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

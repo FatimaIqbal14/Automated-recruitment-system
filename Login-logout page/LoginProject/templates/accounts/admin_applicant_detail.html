@@ -1,0 +1,175 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Application – {{ application.full_name }} – SOORTI Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="page-header">
+      <a href="{% url 'admin_job_applicants' application.job.id %}" class="back-link">← Back to Applicants List</a>
+      <h1>Application Dashboard</h1>
+      <p class="text-muted">Reviewing application for <strong>{{ application.job.title }}</strong></p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+      
+      <!-- ── Left Column: Candidate Info ── -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        
+        <div class="profile-summary-card" style="margin-bottom: 0;">
+          <h3 style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Profile Details</span>
+            <span class="status-badge status-{{ application.status|lower }}">{{ application.status }}</span>
+          </h3>
+          <div class="profile-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="pf-item"><span class="pf-label">Candidate ID</span><span class="pf-val accent" style="font-weight: 700;">{{ profile.custom_id|default:"—" }}</span></div>
+            <div class="pf-item"><span class="pf-label">Display Username</span><span class="pf-val">{{ profile.display_name|default:"—" }}</span></div>
+            <div class="pf-item"><span class="pf-label">Full Name</span><span class="pf-val">{{ application.full_name }}</span></div>
+            <div class="pf-item"><span class="pf-label">Email Address</span><span class="pf-val">{{ applicant.email }}</span></div>
+            <div class="pf-item"><span class="pf-label">Age</span><span class="pf-val">{{ application.age }} yrs</span></div>
+            <div class="pf-item"><span class="pf-label">Gender</span><span class="pf-val">{{ profile.get_gender_display|default:"—" }}</span></div>
+            <div class="pf-item"><span class="pf-label">Experience</span><span class="pf-val">{{ application.experience_years }} yrs</span></div>
+            <div class="pf-item">
+              <span class="pf-label">Skills</span>
+              <span class="pf-val">
+                {% for skill in profile.skills.all %}
+                  <span class="tag">{{ skill.name }}</span>
+                {% empty %}—{% endfor %}
+              </span>
+            </div>
+          </div>
+
+          {% if application.ai_score is not None %}
+          <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--clr-border);">
+            <div class="pf-item">
+              <span class="pf-label">AI Match Score</span>
+              <span class="pf-val">
+                <span class="status-badge {% if application.ai_score >= 70 %}status-accepted{% else %}status-rejected{% endif %}" style="font-size:1rem; font-weight:700;">
+                  {{ application.ai_score }}%
+                </span>
+              </span>
+            </div>
+            {% if application.ai_reason %}
+            <div class="pf-item" style="margin-top:8px;">
+              <span class="pf-label">AI Assessment</span>
+              <span class="pf-val" style="font-style:italic; color:var(--clr-muted);">{{ application.ai_reason }}</span>
+            </div>
+            {% endif %}
+            {% if application.interview_slot %}
+            <div class="pf-item" style="margin-top:8px;">
+              <span class="pf-label">Interview Scheduled</span>
+              <span class="pf-val accent" style="font-weight:700;">
+                {{ application.interview_slot|date:"l, F d, Y" }} at {{ application.interview_slot|date:"g:i A" }}
+              </span>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Cover Letter -->
+        <div class="profile-summary-card" style="margin-bottom: 0;">
+          <h3>Cover Letter</h3>
+          <div style="background-color: var(--clr-surface2); padding: 16px; border-radius: var(--radius); border: 1px solid var(--clr-border); font-size: 0.95rem; white-space: pre-wrap;">
+            {{ application.cover_letter|default:"No cover letter provided." }}
+          </div>
+        </div>
+
+        <!-- Action / Status update form -->
+        <div class="profile-summary-card" style="margin-bottom: 0;">
+          <h3>Update Application Status</h3>
+          <form method="post" style="display: flex; gap: 12px; align-items: center; margin-top: 12px;">
+            {% csrf_token %}
+            <div style="flex: 1;">
+              <select name="status" style="width: 100%;">
+                <option value="Pending" {% if application.status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="Reviewed" {% if application.status == 'Reviewed' %}selected{% endif %}>Reviewed</option>
+                <option value="Accepted" {% if application.status == 'Accepted' %}selected{% endif %}>Accepted</option>
+                <option value="Rejected" {% if application.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Status</button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- ── Right Column: CV Preview ── -->
+      <div>
+        <div class="profile-summary-card" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="margin-bottom: 0;">Curriculum Vitae (CV)</h3>
+            {% if application.cv %}
+              <a href="{{ application.cv.url }}" target="_blank" class="btn btn-outline btn-sm">Open ↗</a>
+            {% endif %}
+          </div>
+
+          {% if application.cv %}
+            {% if cv_type == 'pdf' %}
+              <div style="background: var(--clr-surface2); border-radius: var(--radius); border: 1px solid var(--clr-border); padding: 16px;">
+                <canvas id="pdf-canvas" style="width: 100%; border-radius: var(--radius);"></canvas>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                  <button onclick="changePage(-1)" class="btn btn-outline btn-sm">← Prev</button>
+                  <span id="page-info" style="font-size:0.9rem; color:var(--clr-muted);">Page 1</span>
+                  <button onclick="changePage(1)" class="btn btn-outline btn-sm">Next →</button>
+                </div>
+              </div>
+              <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+              <script>
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                let pdfDoc = null, currentPage = 1;
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+                pdfjsLib.getDocument('{{ application.cv.url }}').promise.then(doc => {
+                  pdfDoc = doc;
+                  renderPage(currentPage);
+                });
+                function renderPage(num) {
+                  pdfDoc.getPage(num).then(page => {
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    page.render({ canvasContext: ctx, viewport });
+                    document.getElementById('page-info').textContent = `Page ${num} of ${pdfDoc.numPages}`;
+                  });
+                }
+                function changePage(delta) {
+                  const newPage = currentPage + delta;
+                  if (newPage < 1 || newPage > pdfDoc.numPages) return;
+                  currentPage = newPage;
+                  renderPage(currentPage);
+                }
+              </script>
+            {% elif cv_type == 'image' %}
+              <div style="background: var(--clr-surface2); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--clr-border); padding: 16px;">
+                <img src="{{ application.cv.url }}" style="width: 100%; height: auto; border-radius: var(--radius);" />
+              </div>
+            {% else %}
+              <div class="empty-state" style="border: 1px dashed var(--clr-border); border-radius: var(--radius); padding: 64px 20px;">
+                <span style="font-size: 3rem; display: block; margin-bottom: 12px;">📄</span>
+                <p>CV uploaded but cannot be previewed inline.</p>
+                <a href="{{ application.cv.url }}" target="_blank" class="btn btn-primary mt-1">Download CV</a>
+              </div>
+            {% endif %}
+          {% else %}
+            <div class="empty-state" style="border: 1px dashed var(--clr-border); border-radius: var(--radius); padding: 64px 20px;">
+              <span style="font-size: 3rem; display: block; margin-bottom: 12px;">📄</span>
+              <p>No CV file was uploaded by the candidate.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% block extra_css %}
+<style>
+  @media (max-width: 992px) {
+    .container > div[style*="grid-template-columns"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Edit Profile – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container container-narrow">
+    <div class="page-header">
+      <a href="{% url 'dashboard' %}" class="back-link">← Back to Dashboard</a>
+      <h1>Edit Profile</h1>
+    </div>
+
+    <div class="form-card">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="field-group">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<span class="field-hint">{{ field.help_text }}</span>{% endif %}
+          {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="form-actions">
+          <a href="{% url 'dashboard' %}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/skills_autocomplete.js' %}"></script>
+{% endblock %}

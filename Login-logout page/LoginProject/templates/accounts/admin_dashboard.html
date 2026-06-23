@@ -1,0 +1,121 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Admin Dashboard – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+
+    <div class="dashboard-header">
+      <div>
+        <h1>💼 Portal <span class="accent">Admin Dashboard</span></h1>
+        <p class="text-muted">Manage job postings, review applicants, and track recruitment progress.</p>
+      </div>
+      <div class="dashboard-actions">
+        <a href="{% url 'admin_create_job' %}" class="btn btn-primary">+ Post New Job</a>
+      </div>
+    </div>
+
+    <!-- Job list with candidate counts -->
+    <div class="dashboard-section">
+      <h2>Active Job Openings</h2>
+
+      {% if jobs %}
+      <div class="applications-table-wrap">
+        <table class="applications-table">
+          <thead>
+            <tr>
+              <th>Job Title</th>
+              <th>Department</th>
+              <th>Location & Type</th>
+              <th class="text-center">Total Applicants</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for job in jobs %}
+            <tr>
+              <td><strong>{{ job.title }}</strong></td>
+              <td><span class="badge badge-dept">{{ job.department }}</span></td>
+              <td>{{ job.location }} · {{ job.job_type }}</td>
+              <td class="text-center">
+                <span class="status-badge status-reviewed" style="font-weight: 700;">
+                  {{ job.app_count }}
+                </span>
+              </td>
+              <td class="text-center">
+                <a href="{% url 'admin_job_applicants' job.id %}" class="btn btn-outline btn-sm">
+                  View Candidates →
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <p>No jobs have been posted yet.</p>
+        <a href="{% url 'admin_create_job' %}" class="btn btn-primary mt-1">Post First Job</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Stats row -->
+<div class="dashboard-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
+  <div class="profile-summary-card" style="margin:0; text-align:center;">
+    <h2 style="font-size:2rem; color:var(--clr-primary-h);">{{ jobs.count }}</h2>
+    <p class="text-muted">Active Jobs</p>
+  </div>
+  <div class="profile-summary-card" style="margin:0; text-align:center;">
+    <h2 style="font-size:2rem; color:var(--clr-primary-h);">{{ users.count }}</h2>
+    <p class="text-muted">Registered Users</p>
+  </div>
+  <div class="profile-summary-card" style="margin:0; text-align:center;">
+    <h2 style="font-size:2rem; color:var(--clr-primary-h);">{{ total_applications }}</h2>
+    <p class="text-muted">Total Applications</p>
+  </div>
+</div>
+
+<!-- Users section -->
+<div class="dashboard-section">
+  <h2>Registered Users</h2>
+  <div class="applications-table-wrap">
+    <table class="applications-table">
+      <thead>
+        <tr>
+          <th>Candidate ID</th>
+          <th>Display Name</th>
+          <th>Email</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Experience</th>
+          <th>Applications</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td><code style="font-weight:700; color:var(--clr-primary-h);">{{ user.profile.custom_id|default:"—" }}</code></td>
+          <td><strong>{{ user.profile.display_name|default:"—" }}</strong></td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.profile.age|default:"—" }}</td>
+          <td>{{ user.profile.get_gender_display|default:"—" }}</td>
+          <td>{{ user.profile.experience|default:"0" }} yrs</td>
+          <td>{{ user.application_set.count }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center">No users registered yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Link to raw Django admin -->
+<div class="dashboard-section">
+  <a href="/django-admin/" class="btn btn-ghost">⚙️ Go to Django Admin Panel →</a>
+</div>
+
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'accounts/base.html' %}
+{% block title %}{{ job.title }} – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container container-narrow">
+    <a href="{% url 'job_openings' %}" class="back-link">← Back to Job Openings</a>
+
+    <div class="job-detail-card">
+      <div class="job-detail-header">
+        <div>
+          <h1>{{ job.title }}</h1>
+          <p class="job-meta">
+            <span class="badge badge-dept">{{ job.department }}</span>
+            <span>📍 {{ job.location }}</span>
+            <span>🕐 {{ job.job_type }}</span>
+          </p>
+        </div>
+        {% if has_applied %}
+        <button class="btn btn-outline" disabled style="cursor: not-allowed; opacity: 0.7;">Applied ✓</button>
+        {% else %}
+        <a href="{% url 'apply_job' job.id %}" class="btn btn-primary">Apply Now</a>
+        {% endif %}
+      </div>
+
+      <div class="job-detail-body">
+        <h3>About the Role</h3>
+        <p>{{ job.description }}</p>
+
+        <h3>Requirements</h3>
+        <p>{{ job.requirements }}</p>
+      </div>
+
+      <div class="job-detail-footer">
+        {% if has_applied %}
+        <button class="btn btn-outline btn-lg btn-full" disabled style="cursor: not-allowed; opacity: 0.7;">Applied for
+          This Position ✓</button>
+        {% else %}
+        <a href="{% url 'apply_job' job.id %}" class="btn btn-primary btn-lg btn-full">Apply for This Position</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Applicants for {{ job.title }} – SOORTY Denimkind{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="page-header">
+      <a href="{% url 'admin_dashboard' %}" class="back-link">← Back to Admin Dashboard</a>
+      <h1>Candidates for <span class="accent">{{ job.title }}</span></h1>
+      <p class="text-muted">{{ job.department }} · {{ job.location }} · {{ job.job_type }}</p>
+    </div>
+
+    <div class="dashboard-section">
+      <h2>List of Applicants</h2>
+
+      {% if applications %}
+      <div class="applications-table-wrap">
+        <table class="applications-table">
+          <thead>
+            <tr>
+              <th>Candidate ID</th>
+              <th>Full Name</th>
+              <th>Gender / Age</th>
+              <th>Experience</th>
+              <th>Applied On</th>
+              <th>Status</th>
+              <th class="text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for app in applications %}
+            <tr>
+              <td><code
+                  style="font-weight: 700; color: var(--clr-primary-h);">{{ app.user.profile.custom_id|default:"—" }}</code>
+              </td>
+              <td><strong>{{ app.full_name }}</strong><br><span style="font-size: 0.8rem; color: var(--clr-muted);">{{
+                  app.user.email }}</span></td>
+              <td>{{ app.user.profile.get_gender_display|default:"—" }} / {{ app.age }} yrs</td>
+              <td>{{ app.experience_years }} yrs</td>
+              <td>{{ app.applied_at|date:"M d, Y" }}</td>
+              <td>
+                <span class="status-badge status-{{ app.status|lower }}">
+                  {{ app.status }}
+                </span>
+              </td>
+              <td class="text-center">
+                <a href="{% url 'admin_applicant_detail' app.id %}" class="btn btn-primary btn-sm">
+                  Open Dashboard
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <p>No candidates have applied for this position yet.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
